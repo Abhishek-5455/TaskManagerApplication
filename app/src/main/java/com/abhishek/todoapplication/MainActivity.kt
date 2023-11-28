@@ -3,30 +3,40 @@ package com.abhishek.todoapplication
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Spacer
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.abhishek.todoapplication.data.taskList
-import com.abhishek.todoapplication.ui.components.ProfileHeader
-import com.abhishek.todoapplication.ui.components.TaskComponent
-import com.abhishek.todoapplication.ui.components.WelcomeMessage
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.room.Room
+import com.abhishek.todoapplication.data.TaskDatabase
+import com.abhishek.todoapplication.ui.TaskMainScreen
+import com.abhishek.todoapplication.ui.TaskViewModel
 import com.abhishek.todoapplication.ui.theme.TodoApplicationTheme
 
 class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalMaterial3Api::class)
+
+    private val db by lazy {
+        Room.databaseBuilder(
+            applicationContext,
+            TaskDatabase::class.java,
+            "task.db"
+        ).build()
+    }
+
+    private val viewModel by viewModels<TaskViewModel> (
+        factoryProducer = {
+            object: ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return TaskViewModel(db.taskDao) as T
+                }
+            }
+        }
+    )
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -36,46 +46,14 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Scaffold(
-                        topBar = {
-                            ProfileHeader(modifier = Modifier.fillMaxWidth(),imageId = R.drawable.profile)
-                        }
-                    ) { paddingValues ->
-                        MainScreen(
-                            modifier = Modifier.padding(paddingValues)
-                        )
-                    }
+                    val state by viewModel.state.collectAsState()
+
+                    TaskMainScreen(
+                        state = state,
+                        onEvent = viewModel::onEvent
+                    )
                 }
             }
         }
     }
-}
-
-@Composable
-fun MainScreen(
-    modifier: Modifier = Modifier
-) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        item {
-            Spacer(modifier = Modifier.height(20.dp))
-        }
-        item {
-            WelcomeMessage(userName = "Abhishek")
-        }
-        items(taskList) {task ->
-            TaskComponent(task = task)
-            
-        }
-    }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun DefaultPreview() {
-    MainScreen()
 }

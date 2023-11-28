@@ -14,7 +14,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,7 +39,8 @@ import com.abhishek.todoapplication.ui.theme.Telex
 @Composable
 fun TaskComponent(
     task: Task,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onIconClick: (Task) -> Unit
 ) {
     val taskBgColors = listOf(LightPurple, LightBlue, LightGreen)
     val color = taskBgColors[task.id % 3]
@@ -68,38 +73,52 @@ fun TaskComponent(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
+            Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
                     .background(color)
-                    .weight(0.9f)
-                    .padding(12.dp),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                    .padding(12.dp)
+                    .weight(0.9f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = task.title,
-                    fontFamily = Telex,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                task.body?.let {
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     Text(
-                        text = it,
+                        text = task.title,
+                        fontFamily = Telex,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    task.body?.let {
+                        Text(
+                            text = it,
+                            fontFamily = Telex,
+                            fontSize = 12.sp,
+                        )
+                    }
+                    Text(
+                        text = "${task.startTime} - ${task.endTime}",
                         fontFamily = Telex,
                         fontSize = 12.sp,
                     )
                 }
-                Text(
-                    text = "${task.startTime} - ${task.endTime}",
-                    fontFamily = Telex,
-                    fontSize = 12.sp,
-                )
-
+                IconButton(onClick = { onIconClick(task) } ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Delete,
+                        contentDescription = "Delete Task",
+                        tint = Color.LightGray
+                    )
+                }
             }
             Divider(
-                modifier = Modifier.weight(0.1f).width(6.dp),
-                color = Color.Black)
+                modifier = Modifier
+                    .weight(0.1f)
+                    .width(6.dp),
+                color = Color.Black
+            )
         }
     }
 }
@@ -108,11 +127,11 @@ fun TaskComponent(
 @Preview
 @Composable
 fun TaskComponentPreview() {
-    TaskComponent(task = Task(
-        1,
-        "Do Laundry",
-        "Wash and fold clothes",
-        "10:00",
-        "11:00"
-    ))
+//    TaskComponent(task = Task(
+//        1,
+//        "Do Laundry",
+//        "Wash and fold clothes",
+//        "10:00",
+//        "11:00"
+//    ))
 }
